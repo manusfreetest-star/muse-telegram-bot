@@ -153,7 +153,22 @@ async def handler(event):
             print(f"Error: {e}")
             await event.respond("Sorry, ye error pish umad, dobare talash kon 🙏")
 
+async def backup_task():
+    await client.connect()
+    while True:
+        await asyncio.sleep(7200)
+        try:
+            if os.path.exists(MEMORY_FILE):
+                await client.send_file(ADMIN_ID, MEMORY_FILE, caption=f"💾 Backup memory - {len(memory)} users - {__import__('datetime').datetime.now().strftime('%Y-%m-%d %H:%M')}")
+                print("Backup sent to admin")
+        except Exception as e:
+            print(f"Backup error: {e}")
+
 if __name__ == "__main__":
     print("Bot started... Listening only to PMs 🚀")
     client.start()
+    try:
+        client.loop.create_task(backup_task())
+    except:
+        pass
     client.run_until_disconnected()
