@@ -132,12 +132,12 @@ async def handler(event):
                 f.write(code)
             proc2 = await asyncio.create_subprocess_exec("python3", f"/tmp/{safe_name}", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             stdout, stderr = await asyncio.wait_for(proc2.communicate(), timeout=15)
-                out = stdout.decode()[:3000] if stdout else ""
-                err = stderr.decode()[:1500] if stderr else ""
-                result = f"✅ Run shod!\n\n📤 Output:\n```\n{out or '(no output)'}\n```"
-                if err:
-                    result += f"\n\n⚠️ Error:\n```\n{err}\n```"
-                await event.respond(result)
+            out = stdout.decode()[:3000] if stdout else ""
+            err = stderr.decode()[:1500] if stderr else ""
+            result = f"✅ Run shod!\n\n📤 Output:\n```\n{out or '(no output)'}\n```"
+            if err:
+                result += f"\n\n⚠️ Error:\n```\n{err}\n```"
+            await event.respond(result)
         except Exception as e:
             await event.respond(f"❌ Error dar run: {e}")
         return
