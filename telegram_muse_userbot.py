@@ -10,7 +10,14 @@ API_ID = int(os.getenv("TG_API_ID", "0"))
 API_HASH = os.getenv("TG_API_HASH", "")
 SESSION_NAME = "muse_spark_session"
 OPENCODE_API_KEY = os.getenv("OPENCODE_API_KEY", "")
-if os.getenv("TG_SESSION_B64"):
+if os.getenv("TG_SESSION_B64_1"):
+    try:
+        b64 = os.getenv("TG_SESSION_B64_1", "") + os.getenv("TG_SESSION_B64_2", "")
+        with open(f"{SESSION_NAME}.session", "wb") as f:
+            f.write(base64.b64decode(b64))
+    except:
+        pass
+elif os.getenv("TG_SESSION_B64"):
     try:
         with open(f"{SESSION_NAME}.session", "wb") as f:
             f.write(base64.b64decode(os.getenv("TG_SESSION_B64")))
