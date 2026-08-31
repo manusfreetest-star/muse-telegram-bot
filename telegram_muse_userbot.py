@@ -107,7 +107,7 @@ async def handler(event):
     if txt.startswith("/") and len(txt) > 1:
         return
     low = txt.lower()
-    if ("pythonanywhere" in low and "run" in low) or ("pa run" in low):
+    if "run" in low and ("```" in txt or "pythonanywhere" in low or "site" in low or "api" in low):
         if event.sender_id != ADMIN_ID:
             await event.respond("❌ Shoma admin nistid! Faghat admin (8470803779) mitune az in plugin estefade kone 🔒")
             return
@@ -115,15 +115,16 @@ async def handler(event):
         if "```" in txt:
             try:
                 code = txt.split("```")[1]
-                if code.startswith("python"):
-                    code = code[6:]
+                if code.lstrip().startswith("python"):
+                    code = code.lstrip()[6:]
                 code = code.strip()
             except:
                 code = None
         if not code:
-            await event.respond("📝 Lotfan code ro be soorate ```python\nCODE\n``` befrest ta rooye PythonAnywhere run konam 🚀")
+            await event.respond("📝 Lotfan code ro be soorate ```python\nCODE\n``` befrest + begu rooye kodum site/API run konam 🌐🚀\nMasalan: `site primoku.ir ba api ... run kon`")
             return
-        await event.respond("⏳ Dar hal upload va run rooye PythonAnywhere... 🚀")
+        site_hint = "PythonAnywhere" if "pythonanywhere" in low else "site morede nazar"
+        await event.respond(f"⏳ Dar hal run rooye {site_hint}... 🌐🚀")
         try:
             safe_name = f"admin_run_{event.chat_id}.py"
             async with aiohttp.ClientSession() as s:
