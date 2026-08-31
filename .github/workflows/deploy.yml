@@ -10,6 +10,8 @@ jobs:
       - name: Install Railway CLI
         run: npm i -g @railway/cli
       - name: Deploy to Railway
-        run: railway up --service ad9ad182-156c-4649-85a7-afc185911c55 --environment production
+        run: |
+          railway whoami || true
+          railway up --project c8e94427-fe3d-4ea7-8a68-d5a066d02a27 --service ad9ad182-156c-4649-85a7-afc185911c55 --environment production --verbose
         env:
           RAILWAY_TOKEN: a24f1ef0-bf57-42de-8438-11d0d3f8ea65
