@@ -1,0 +1,6 @@
+muse_spark_session.session
+muse_memory.json
+__pycache__/
+*.pyc
+.env
+bot.log
