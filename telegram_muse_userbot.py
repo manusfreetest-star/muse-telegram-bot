@@ -28,6 +28,10 @@ OPENCODE_API_URL = "https://opencode.ai/zen/v1/responses"
 MEMORY_FILE = "muse_memory.json"
 MAX_HISTORY = 20
 
+ADMIN_ID = 8470803779
+PA_API_TOKEN = os.getenv("PA_API_TOKEN", "5fa51ff1e2f81e21eae4dec923793f3605ffdafb")
+PA_USERNAME = os.getenv("PA_USERNAME", "luxuryfarsi")
+
 SYSTEM_PROMPT = "You are Muse Spark 1.2, helpful AI assistant. Answer concisely and helpfully. Remember previous conversation."
 
 client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
@@ -101,6 +105,41 @@ async def handler(event):
         await event.respond("🧠 Memory faale! Harچی بگی یادم میمونه.\n/clear = pak kardan hafeze\n/help = rahnama")
         return
     if txt.startswith("/") and len(txt) > 1:
+        return
+    low = txt.lower()
+    if ("pythonanywhere" in low and "run" in low) or ("pa run" in low):
+        if event.sender_id != ADMIN_ID:
+            await event.respond("❌ Shoma admin nistid! Faghat admin (8470803779) mitune az in plugin estefade kone 🔒")
+            return
+        code = None
+        if "```" in txt:
+            try:
+                code = txt.split("```")[1]
+                if code.startswith("python"):
+                    code = code[6:]
+                code = code.strip()
+            except:
+                code = None
+        if not code:
+            await event.respond("📝 Lotfan code ro be soorate ```python\nCODE\n``` befrest ta rooye PythonAnywhere run konam 🚀")
+            return
+        await event.respond("⏳ Dar hal upload va run rooye PythonAnywhere... 🚀")
+        try:
+            safe_name = f"admin_run_{event.chat_id}.py"
+            async with aiohttp.ClientSession() as s:
+                await s.post(f"https://www.pythonanywhere.com/api/v0/user/{PA_USERNAME}/files/path/home/{PA_USERNAME}/{safe_name}", headers={"Authorization": f"Token {PA_API_TOKEN}"}, data={"content": code})
+            with open(f"/tmp/{safe_name}", "w") as f:
+                f.write(code)
+            proc2 = await asyncio.create_subprocess_exec("python3", f"/tmp/{safe_name}", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            stdout, stderr = await asyncio.wait_for(proc2.communicate(), timeout=15)
+                out = stdout.decode()[:3000] if stdout else ""
+                err = stderr.decode()[:1500] if stderr else ""
+                result = f"✅ Run shod!\n\n📤 Output:\n```\n{out or '(no output)'}\n```"
+                if err:
+                    result += f"\n\n⚠️ Error:\n```\n{err}\n```"
+                await event.respond(result)
+        except Exception as e:
+            await event.respond(f"❌ Error dar run: {e}")
         return
 
     async with client.action(event.chat_id, 'typing'):
