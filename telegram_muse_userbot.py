@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 import asyncio
 import aiohttp
 from telethon import TelegramClient, events
@@ -9,6 +10,12 @@ API_ID = int(os.getenv("TG_API_ID", "0"))
 API_HASH = os.getenv("TG_API_HASH", "")
 SESSION_NAME = "muse_spark_session"
 OPENCODE_API_KEY = os.getenv("OPENCODE_API_KEY", "")
+if os.getenv("TG_SESSION_B64"):
+    try:
+        with open(f"{SESSION_NAME}.session", "wb") as f:
+            f.write(base64.b64decode(os.getenv("TG_SESSION_B64")))
+    except:
+        pass
 MODEL = "muse-spark-1.2-contributor-free"
 OPENCODE_API_URL = "https://opencode.ai/zen/v1/responses"
 MEMORY_FILE = "muse_memory.json"
