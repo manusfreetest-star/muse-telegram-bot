@@ -25,7 +25,7 @@ elif os.getenv("TG_SESSION_B64"):
         pass
 MODEL = "muse-spark-1.2-contributor-free"
 OPENCODE_API_URL = "https://opencode.ai/zen/v1/responses"
-MEMORY_FILE = "muse_memory.json"
+MEMORY_FILE = "/data/muse_memory.json" if os.path.exists("/data") else "muse_memory.json"
 MAX_HISTORY = 20
 
 ADMIN_ID = 8470803779
