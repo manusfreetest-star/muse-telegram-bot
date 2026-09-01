@@ -25,29 +25,49 @@ elif os.getenv("TG_SESSION_B64"):
         pass
 MODEL = "muse-spark-1.2-contributor-free"
 OPENCODE_API_URL = "https://opencode.ai/zen/v1/responses"
-MEMORY_FILE = "/data/muse_memory.json" if os.path.exists("/data") else "muse_memory.json"
-MAX_HISTORY = 20
+def _detect_memory_dir():
+    for p in [os.getenv("RAILWAY_VOLUME_MOUNT_PATH"), "/data", "/app/data", "/volume", "."]:
+        if p and os.path.exists(p):
+            try:
+                os.makedirs(p, exist_ok=True)
+                test = os.path.join(p, ".write_test")
+                with open(test, "w") as f: f.write("ok")
+                os.remove(test)
+                return p
+            except: continue
+    return "."
+MEMORY_DIR = _detect_memory_dir()
+MEMORY_FILE = os.path.join(MEMORY_DIR, "muse_memory.json")
+print(f"📁 MEMORY_DIR={MEMORY_DIR} MEMORY_FILE={MEMORY_FILE} RAILWAY_VOLUME={os.getenv('RAILWAY_VOLUME_MOUNT_PATH')}")
+MAX_HISTORY = 30
 
 ADMIN_ID = 8470803779
 PA_API_TOKEN = os.getenv("PA_API_TOKEN", "5fa51ff1e2f81e21eae4dec923793f3605ffdafb")
 PA_USERNAME = os.getenv("PA_USERNAME", "luxuryfarsi")
 
-SYSTEM_PROMPT = "You are Muse Spark 1.2, helpful AI assistant. Answer concisely and helpfully. Remember previous conversation."
+SYSTEM_PROMPT = """You are Muse Spark 1.2, helpful AI assistant. Answer concisely and helpfully in the user's language (Finglish/Persian). YOU HAVE MEMORY - remember all previous conversation details, names, preferences. If user says "yadet bashe" or "zak hire kon", confirm with "memory updated ♻️"."""
 
 client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
 
 try:
     with open(MEMORY_FILE, "r") as f:
-        memory = defaultdict(list, {int(k): v for k, v in json.load(f).items()})
-except:
+        raw = json.load(f)
+        memory = defaultdict(list, {int(k): v for k, v in raw.items()})
+        print(f"✅ Memory loaded: {len(memory)} users az {MEMORY_FILE}")
+except Exception as e:
+    print(f"⚠️ Memory load failed ({MEMORY_FILE}): {e}")
     memory = defaultdict(list)
 
 def save_memory():
     try:
-        with open(MEMORY_FILE, "w") as f:
-            json.dump({str(k): v for k, v in memory.items()}, f, ensure_ascii=False)
-    except:
-        pass
+        os.makedirs(os.path.dirname(MEMORY_FILE) or ".", exist_ok=True)
+        tmp = MEMORY_FILE + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump({str(k): v for k, v in memory.items()}, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, MEMORY_FILE)
+        print(f"💾 Memory saved: {len(memory)} users -> {MEMORY_FILE}")
+    except Exception as e:
+        print(f"❌ Memory save failed: {e}")
 
 async def ask_muse(chat_id: int, prompt: str) -> str:
     headers = {
